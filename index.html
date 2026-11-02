@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Колесо фортуны</title>
+<style>
+body {
+  background: #17172b;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  padding: 20px;
+}
+h1 { color: gold; }
+canvas {
+  max-width: 90vw;
+  margin: 20px auto;
+}
+button {
+  padding: 14px 25px;
+  background: gold;
+  border: 0;
+  border-radius: 12px;
+  font-size: 18px;
+  margin: 8px;
+}
+</style>
+</head>
+<body>
+<h1>🎡 Колесо фортуны</h1>
+<p>Прокрутки: <span id="spins">10</span></p>
+<canvas id="wheel" width="320" height="320"></canvas>
+<br>
+<button onclick="spin()">КРУТИТЬ!</button>
+<p id="result">Удачи!</p>
+
+<script>
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const prizes = ["1","2","3","5","10","20","50","100"];
+let angle = 0;
+let spins = 10;
+let busy = false;
+
+function draw() {
+  const colors = ["#ff5252","#ff9800","#ffeb3b","#4caf50",
+                  "#2196f3","#9c27b0","#e91e63","#00bcd4"];
+  ctx.clearRect(0,0,320,320);
+  for(let i=0;i<8;i++){
+    let start=angle+i*Math.PI/4;
+    ctx.beginPath();
+    ctx.moveTo(160,160);
+    ctx.arc(160,160,150,start,start+Math.PI/4);
+    ctx.fillStyle=colors[i];
+    ctx.fill();
+    ctx.save();
+    ctx.translate(160,160);
+    ctx.rotate(start+Math.PI/8);
+    ctx.fillStyle="black";
+    ctx.font="bold 20px Arial";
+    ctx.fillText(prizes[i],85,7);
+    ctx.restore();
+  }
+  ctx.beginPath();
+  ctx.arc(160,160,25,0,Math.PI*2);
+  ctx.fillStyle="white";
+  ctx.fill();
+}
+function spin(){
+  if(busy || spins<=0) return;
+  busy=true;
+  spins--;
+  document.getElementById("spins").textContent=spins;
+  let start=angle;
+  let target=start+Math.PI*2*5+Math.random()*Math.PI*2;
+  let t=0;
+  function animate(){
+    t+=0.015;
+    let p=Math.min(t,1);
+    angle=start+(target-start)*(1-Math.pow(1-p,3));
+    draw();
+    if(p<1) requestAnimationFrame(animate);
+    else {
+      busy=false;
+      let index=Math.floor(((Math.PI*2-angle%(Math.PI*2))%(Math.PI*2))/(Math.PI/4));
+      document.getElementById("result").textContent=
+        "Выпало: "+prizes[index]+"!";
+    }
+  }
+  requestAnimationFrame(animate);
+}
+draw();
+</script>
+</body>
+</html>
